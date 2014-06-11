@@ -5,6 +5,9 @@ from pygame.compat import geterror
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, 'data')
 
+#gravity is 10!!!!!!!!!!! ALWAYS!
+GRAVITY = 10
+
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
@@ -25,46 +28,60 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image,self.rect = load_image('person.png', -1)
         self.original_image = self.image
-        self.pos = [200,200]
+        self.pos = [200,0]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
         self.speed = 5
+        self.direction = 1
+        self.velocity = GRAVITY
     def update(self):
-        if pygame.key.get_pressed()[K_UP]:
-            self.move(0,-1)
-        if pygame.key.get_pressed()[K_DOWN]:
-            self.move(0,1)
         if pygame.key.get_pressed()[K_LEFT]:
-            self.move(-1,0)
+            self.move(-1)
         if pygame.key.get_pressed()[K_RIGHT]:
-            self.move(1,0)
-
-        self.rect.center = (self.pos[0],self.pos[1])
-    def move(self, dx, dy):
-        if dx < 0:
+            self.move(1)
+        if self.direction == -1:
             self.image = pygame.transform.flip(self.original_image, 1, 0)
-        elif dx > 0:
+        elif self.direction == 1:
             self.image = self.original_image
+                
+        if pygame.key.get_pressed()[K_UP]:
+            self.jump()
+            
+        if self.rect.bottom > self.screen_area.bottom:
+            self.pos[1] = self.screen_area.bottom - 30
+        else:
+            self.velocity += GRAVITY / 10
+
+        self.pos[1] += self.velocity
+        
+        self.rect.center = (self.pos[0],self.pos[1])
+    def move(self, dx):
+        if dx>0:
+            self.direction = 1
+        elif dx<0:
+            self.direction = -1
+        #move horizontaly
         self.pos[0]+= self.speed * dx
-        self.pos[1]+= self.speed * dy
         if self.rect.right < self.screen_area.left:
             self.pos[0] = self.screen_area.right - 5
         if self.rect.left > self.screen_area.right:
             self.pos[0] = self.screen_area.left + 5
-        if self.rect.bottom < self.screen_area.top:
-            self.pos[1] = self.screen_area.bottom - 5
-        if self.rect.top > self.screen_area.bottom:
-            self.pos[0] = self.screen_area.top + 5
+
+    def jump(self):
+        """How high?"""
+        #move verticaly
+        self.velocity = -15
+
     
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((400,400))
+    screen = pygame.display.set_mode((800,400))
     pygame.display.set_caption('Fun Game')
-    pygame.mouse.set_visible(0)
+    pygame.mouse.set_visible(1)
     
     background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill((23,75,200))
+    background.fill((200,200,255))
 
 #Display The Background
     screen.blit(background, (0, 0))
