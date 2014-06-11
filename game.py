@@ -24,10 +24,11 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image,self.rect = load_image('person.png', -1)
-        self.pos = [10,10]
+        self.original_image = self.image
+        self.pos = [200,200]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
-        self.speed = 3
+        self.speed = 5
     def update(self):
         if pygame.key.get_pressed()[K_UP]:
             self.move(0,-1)
@@ -40,6 +41,10 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.center = (self.pos[0],self.pos[1])
     def move(self, dx, dy):
+        if dx < 0:
+            self.image = pygame.transform.flip(self.original_image, 1, 0)
+        elif dx > 0:
+            self.image = self.original_image
         self.pos[0]+= self.speed * dx
         self.pos[1]+= self.speed * dy
         if self.rect.right < self.screen_area.left:
@@ -59,7 +64,7 @@ def main():
     
     background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill((12, 55, 210))
+    background.fill((23,75,200))
 
 #Display The Background
     screen.blit(background, (0, 0))
