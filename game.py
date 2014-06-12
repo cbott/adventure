@@ -34,6 +34,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 5
         self.direction = 1
         self.velocity = GRAVITY
+        self.jumping = False
     def update(self):
         if pygame.key.get_pressed()[K_LEFT]:
             self.move(-1)
@@ -43,15 +44,18 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.original_image, 1, 0)
         elif self.direction == 1:
             self.image = self.original_image
-                
-        if pygame.key.get_pressed()[K_UP]:
-            self.jump()
+            
             
         if self.rect.bottom > self.screen_area.bottom:
-            self.pos[1] = self.screen_area.bottom - 30
+            self.velocity = 0
+            self.pos[1] = self.screen_area.bottom - 25
+            self.jumping = False
         else:
             self.velocity += GRAVITY / 10
 
+        if pygame.key.get_pressed()[K_UP]:
+            self.jump()
+            
         self.pos[1] += self.velocity
         
         self.rect.center = (self.pos[0],self.pos[1])
@@ -70,7 +74,9 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         """How high?"""
         #move verticaly
-        self.velocity = -15
+        if not self.jumping:
+            self.velocity = -15
+            self.jumping = True
 
     
 def main():
