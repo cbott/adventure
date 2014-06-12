@@ -26,11 +26,12 @@ def load_image(name, colorkey=None):
 
 class Player(pygame.sprite.Sprite):
     """A guy who moves around the screen"""
-    def __init__(self):
+    def __init__(self, level):
         pygame.sprite.Sprite.__init__(self)
         self.image,self.rect = load_image('person.png', -1)
         self.original_image = self.image
-        self.pos = [200,0]
+        self.level = level
+        self.pos = [100,0]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
         self.speed = 5
@@ -48,13 +49,26 @@ class Player(pygame.sprite.Sprite):
             self.image = self.original_image
             
             
-        if self.rect.bottom > self.screen_area.bottom:
-            self.velocity = 0
-            self.pos[1] = self.screen_area.bottom - 25
-            self.jumping = False
-        else:
-            self.velocity += GRAVITY / 9
-
+##        if self.rect.bottom > self.screen_area.bottom:
+##            self.velocity = 0
+##            self.pos[1] = self.screen_area.bottom - 25
+##            self.jumping = False
+        #stop if you land on a black pixel
+        try:
+            if self.level.get_at((self.rect.centerx,self.rect.bottom + 1)) == (0,0,0,255):
+                self.velocity = 0
+                self.jumping = False
+            else:
+                if self.velocity < 0:
+                    self.velocity += GRAVITY / 10
+                else:
+                    self.velocity = GRAVITY
+        except IndexError:
+                if self.velocity < 0:
+                    self.velocity += GRAVITY / 10
+                else:
+                    self.velocity = GRAVITY
+                    
         if pygame.key.get_pressed()[K_UP]:
             self.jump()
             
@@ -95,7 +109,7 @@ def main():
 
 
     clock = pygame.time.Clock()
-    player = Player()
+    player = Player(background)
     allsprites = pygame.sprite.RenderPlain((player))
 
 #Main Loop
