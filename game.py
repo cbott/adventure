@@ -8,6 +8,8 @@ data_dir = os.path.join(main_dir, 'data')
 #gravity is 10!!!!!!!!!!! ALWAYS!
 GRAVITY = 10
 
+SCREEN_SIZE = (800,400)
+
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
@@ -51,7 +53,7 @@ class Player(pygame.sprite.Sprite):
             self.pos[1] = self.screen_area.bottom - 25
             self.jumping = False
         else:
-            self.velocity += GRAVITY / 10
+            self.velocity += GRAVITY / 9
 
         if pygame.key.get_pressed()[K_UP]:
             self.jump()
@@ -81,17 +83,16 @@ class Player(pygame.sprite.Sprite):
     
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((800,400))
+    screen = pygame.display.set_mode(SCREEN_SIZE)
     pygame.display.set_caption('Fun Game')
     pygame.mouse.set_visible(1)
-    
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((200,200,255))
-
-#Display The Background
-    screen.blit(background, (0, 0))
+#create background    
+    background_img = pygame.image.load(os.path.join(data_dir, "level.png")).convert()
+    background = pygame.Surface(SCREEN_SIZE)
+    background.blit(background_img, (0, 0))
+    screen.blit(background, (0,0))
     pygame.display.flip()
+
 
     clock = pygame.time.Clock()
     player = Player()
