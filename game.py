@@ -6,7 +6,7 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, 'data')
 
 #gravity is 10!!!!!!!!!!! ALWAYS!
-GRAVITY = 10
+GRAVITY = 5
 
 SCREEN_SIZE = (800,400)
 
@@ -15,6 +15,7 @@ BLACK = (0,0,0,255)
 BLUE = (0,0,255,255)
 YELLOW = (255,255,0,255)
 WHITE = (255,255,255,255)
+RED = (255,0,0,255)
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
@@ -37,7 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.image,self.rect = load_image('person.png', -1)
         self.original_image = self.image
         self.level = level
-        self.pos = [100,0]
+        self.pos = [10,10]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
         self.speed = 5
@@ -56,26 +57,31 @@ class Player(pygame.sprite.Sprite):
             
             
         #stop if you land on a non-white pixel
+        print(self.velocity)
         try:
             if not self.is_on(WHITE):
                 self.velocity = 0
                 self.jumping = False
             else:
                 if self.velocity < 0:
-                    self.velocity += GRAVITY / 10
+                    self.velocity += GRAVITY / 2
                 else:
                     self.velocity = GRAVITY
         except IndexError:
                 if self.velocity < 0:
-                    self.velocity += GRAVITY / 10
+                    self.velocity += GRAVITY / 2
                 else:
                     self.velocity = GRAVITY
-                    
-        if pygame.key.get_pressed()[K_UP]:
+        #jump           
+        if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
-            
-        self.pos[1] += self.velocity
+
+        #die
+        if self.is_on(RED):
+            self.die()
         
+        #move
+        self.pos[1] += self.velocity
         self.rect.midbottom = (self.pos[0],self.pos[1])
 
     def move(self, dx):
@@ -94,12 +100,14 @@ class Player(pygame.sprite.Sprite):
         """How high?"""
         #move verticaly
         if not self.jumping:
-            self.velocity = -15
+            self.velocity = -3*GRAVITY
             self.jumping = True
 
     def is_on(self, color):
+        """tells whether the player is standing on a certain colored pixel"""
+        value = False
         try:
-            bottom_px = (self.rect.centerx,self.rect.bottom + 1)
+            bottom_px = (self.rect.centerx,self.rect.bottom+1)
             value = self.level.get_at(bottom_px) == color
         except IndexError:
             if color == WHITE:
@@ -109,7 +117,13 @@ class Player(pygame.sprite.Sprite):
         finally:
             return value
             
-    
+    def die(self):
+        self.kill()
+        font = pygame.font.Font(None, 36)
+        text = font.render("YOU DIED!!!", 1, (10, 10, 10))
+        textpos = text.get_rect()
+        self.level.blit(text, textpos)
+        
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
