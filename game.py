@@ -10,6 +10,12 @@ GRAVITY = 10
 
 SCREEN_SIZE = (800,400)
 
+####colors####
+BLACK = (0,0,0,255)
+BLUE = (0,0,255,255)
+YELLOW = (255,255,0,255)
+WHITE = (255,255,255,255)
+
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
@@ -49,13 +55,9 @@ class Player(pygame.sprite.Sprite):
             self.image = self.original_image
             
             
-##        if self.rect.bottom > self.screen_area.bottom:
-##            self.velocity = 0
-##            self.pos[1] = self.screen_area.bottom - 25
-##            self.jumping = False
-        #stop if you land on a black pixel
+        #stop if you land on a non-white pixel
         try:
-            if self.level.get_at((self.rect.centerx,self.rect.bottom + 1)) == (0,0,0,255):
+            if not self.is_on(WHITE):
                 self.velocity = 0
                 self.jumping = False
             else:
@@ -74,7 +76,8 @@ class Player(pygame.sprite.Sprite):
             
         self.pos[1] += self.velocity
         
-        self.rect.center = (self.pos[0],self.pos[1])
+        self.rect.midbottom = (self.pos[0],self.pos[1])
+
     def move(self, dx):
         if dx>0:
             self.direction = 1
@@ -82,10 +85,10 @@ class Player(pygame.sprite.Sprite):
             self.direction = -1
         #move horizontaly
         self.pos[0]+= self.speed * dx
-        if self.rect.right < self.screen_area.left:
-            self.pos[0] = self.screen_area.right - 5
-        if self.rect.left > self.screen_area.right:
-            self.pos[0] = self.screen_area.left + 5
+        if self.rect.left < self.screen_area.left:
+            self.pos[0] = self.screen_area.right - 10
+        if self.rect.right > self.screen_area.right:
+            self.pos[0] = self.screen_area.left + 10
 
     def jump(self):
         """How high?"""
@@ -94,6 +97,18 @@ class Player(pygame.sprite.Sprite):
             self.velocity = -15
             self.jumping = True
 
+    def is_on(self, color):
+        try:
+            bottom_px = (self.rect.centerx,self.rect.bottom + 1)
+            value = self.level.get_at(bottom_px) == color
+        except IndexError:
+            if color == WHITE:
+                value = True
+            else:
+                value = False
+        finally:
+            return value
+            
     
 def main():
     pygame.init()
@@ -101,7 +116,7 @@ def main():
     pygame.display.set_caption('Fun Game')
     pygame.mouse.set_visible(1)
 #create background    
-    background_img = pygame.image.load(os.path.join(data_dir, "level.png")).convert()
+    background_img = pygame.image.load(os.path.join(data_dir, "level2.png")).convert()
     background = pygame.Surface(SCREEN_SIZE)
     background.blit(background_img, (0, 0))
     screen.blit(background, (0,0))
@@ -129,6 +144,9 @@ def main():
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
+
+        if player.is_on(YELLOW):
+            print("you win")
 
     pygame.quit()
 
