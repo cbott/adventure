@@ -9,7 +9,7 @@ except:
 data_dir = os.path.join(main_dir, 'data')
 
 #gravity is 10!!!!!!!!!!! ALWAYS!
-GRAVITY = 0.1
+GRAVITY = 0.02
 
 SCREEN_SIZE = (800,400)
 
@@ -62,10 +62,14 @@ class Player(pygame.sprite.Sprite):
         self.velocity = GRAVITY
         self.jumping = False
     def update(self):
-        if pygame.key.get_pressed()[K_LEFT]:
-            self.move(-0.2)
-        if pygame.key.get_pressed()[K_RIGHT]:
-            self.move(0.2)
+        #move side-to-side
+        if pygame.key.get_pressed()[K_LEFT] and not \
+           self.px_to_left(BLACK):
+            self.move(-0.1)
+        if pygame.key.get_pressed()[K_RIGHT] and not\
+           self.px_to_right(BLACK):
+            self.move(0.1)
+        #face direction on travel
         if self.direction == -1:
             self.image = pygame.transform.flip(self.original_image, 1, 0)
         elif self.direction == 1:
@@ -85,11 +89,10 @@ class Player(pygame.sprite.Sprite):
         #jump           
         if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
-
-        #die
-        if self.is_on(RED):
-            self.die()
-        
+        #hit your head
+        if self.px_to_top(BLACK):
+            if self.velocity < 0:
+                self.velocity = 0
         #move
         self.pos[1] += self.velocity
         self.rect.midbottom = (self.pos[0],self.pos[1])
@@ -110,7 +113,7 @@ class Player(pygame.sprite.Sprite):
         """How high?"""
         #move verticaly
         if not self.jumping:
-            self.velocity = -3
+            self.velocity = -1.5
             self.jumping = True
 
     def is_on(self, color):
@@ -126,13 +129,51 @@ class Player(pygame.sprite.Sprite):
                 value = False
         finally:
             return value
-            
+
+    def px_to_right(self, color):
+        """tells whether the player is bumping into a pixel on the right"""
+        value = False
+        try:
+            px = (self.rect.right+1,self.rect.bottom-4)
+            value = self.level.get_at(px) == color
+        except IndexError:
+            if color == WHITE:
+                value = True
+            else:
+                value = False
+        finally:
+            return value
+    def px_to_left(self, color):
+        """tells whether the player is bumping into a pixel on the left"""
+        value = False
+        try:
+            px = (self.rect.left-1,self.rect.bottom-4)
+            value = self.level.get_at(px) == color
+        except IndexError:
+            if color == WHITE:
+                value = True
+            else:
+                value = False
+        finally:
+            return value
+    def px_to_top(self, color):
+        """tells whether the player is bumping into a pixel his head"""
+        value = False
+        try:
+            l_px = (self.rect.left,self.rect.top - 1)
+            r_px = (self.rect.right,self.rect.top - 1)
+            if self.level.get_at(l_px) == color or \
+               self.level.get_at(r_px) == color:
+                value = True
+        except IndexError:
+            if color == WHITE:
+                value = True
+            else:
+                value = False
+        finally:
+            return value   
     def die(self):
         self.kill()
-        font = pygame.font.Font(None, 36)
-        text = font.render("YOU DIED!!!", 1, (10, 10, 10))
-        textpos = text.get_rect()
-        self.level.blit(text, textpos)
 
 def pause():
     pausing = True
@@ -158,7 +199,7 @@ def main():
 #Main Loop
     going = True
     while going:
-        clock.tick(200)
+        clock.tick(400)
 
         #Handle Input Events
         for event in pygame.event.get():
@@ -173,13 +214,24 @@ def main():
         allsprites.draw(screen)
         pygame.display.flip()
 
+        #dying
+        if player.is_on(RED):
+            player.die()
+            write("You Died",screen,400,200,color=RED,size=250)
+            write("Press Enter To Retry", screen, 400,
+                  250, size = 20, color=(0,255,0))
+            pause()
+            player = Player(background)
+            allsprites = pygame.sprite.RenderPlain((player))
+        
+        #winning
         if player.is_on(YELLOW):
             write("Good Job!", screen, 400, 100, color=(0,255,0))
             write("Level "+str(level)+" completed", screen,
                   400, 130, color=(0,255,0))
             write("Press Enter To Continue", screen, 400,
                   160, size = 20, color=(0,255,0))
-            player.kill()
+            player.die()
             pause()
             level+=1
             try:
