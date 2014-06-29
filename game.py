@@ -2,8 +2,10 @@ import os, pygame
 from pygame.locals import *
 from pygame.compat import geterror
 
-
-main_dir = os.path.split(os.path.abspath(__file__))[0]
+try:
+        main_dir = os.path.split(os.path.abspath(__file__))[0]
+except:
+        main_dir = "F:\Programming\Python\\adventure"
 data_dir = os.path.join(main_dir, 'data')
 
 #gravity is 10!!!!!!!!!!! ALWAYS!
@@ -52,7 +54,7 @@ class Player(pygame.sprite.Sprite):
         self.image,self.rect = load_image('person.png', -1)
         self.original_image = self.image
         self.level = level
-        self.pos = [10,200]
+        self.pos = [10,300]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
         self.speed = 5
@@ -177,13 +179,19 @@ def main():
                   400, 130, color=(0,255,0))
             write("Press Enter To Continue", screen, 400,
                   160, size = 20, color=(0,255,0))
-            pause()
             player.kill()
             pause()
             level+=1
-            draw_bg(background, screen, "level"+str(level)+".png")
-            player = Player(background)
-            allsprites = pygame.sprite.RenderPlain((player))
+            try:
+                draw_bg(background, screen, "level"+str(level)+".png")
+                player = Player(background)
+                allsprites = pygame.sprite.RenderPlain((player))
+            except:
+                write("You Win!!!!!!!!!!!!!!", screen, 400, 200,
+                        (255,91,231),50)
+                pause()
+                going = False
+                
 
     pygame.quit()
 
