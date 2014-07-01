@@ -19,6 +19,9 @@ BLUE = (0,0,255,255)
 YELLOW = (255,255,0,255)
 WHITE = (255,255,255,255)
 RED = (255,0,0,255)
+GREEN = (0, 255, 0, 255)
+CYAN = (0, 255, 255, 255)
+MAGENTA = (255, 0, 255, 255)
 
 def write(words, surf, x, y, color = (0,0,0), size = 36):
         font = pygame.font.Font(None, size)
@@ -57,7 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = [10,300]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
-        self.speed = 5
+        self.speed = 0.5
         self.direction = 1
         self.velocity = GRAVITY
         self.jumping = False
@@ -65,10 +68,10 @@ class Player(pygame.sprite.Sprite):
         #move side-to-side
         if pygame.key.get_pressed()[K_LEFT] and not \
            self.px_to_left(BLACK):
-            self.move(-0.1)
+            self.move(-1)
         if pygame.key.get_pressed()[K_RIGHT] and not\
            self.px_to_right(BLACK):
-            self.move(0.1)
+            self.move(1)
         #face direction on travel
         if self.direction == -1:
             self.image = pygame.transform.flip(self.original_image, 1, 0)
@@ -78,7 +81,8 @@ class Player(pygame.sprite.Sprite):
             
         #stop if you land on a non-white pixel
         try:
-            if not self.is_on(WHITE):
+            if not self.is_on(WHITE) and not self.is_on(GREEN) \
+               and self.velocity>=0:
                 self.jumping = False
                 self.velocity = 0
             else:
@@ -89,6 +93,12 @@ class Player(pygame.sprite.Sprite):
         #jump           
         if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
+        #bounce on green
+        if self.is_on(GREEN):
+                self.velocity = -1.2 * self.velocity
+        #slide on cyan
+        if self.is_on(CYAN):
+                self.move(self.direction)
         #hit your head
         if self.px_to_top(BLACK):
             if self.velocity < 0:
@@ -181,6 +191,10 @@ def pause():
         for event in pygame.event.get():
             if event.type == KEYDOWN and event.key == K_RETURN:
                 pausing = False
+            elif event.type == QUIT:
+                pausing = False
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                pausing = False
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -188,7 +202,7 @@ def main():
     pygame.mouse.set_visible(1)
 
     background = pygame.Surface(SCREEN_SIZE)
-    level = 1
+    level = 6
 #create background
     draw_bg(background, screen, "level"+str(level)+".png")
 
@@ -199,7 +213,7 @@ def main():
 #Main Loop
     going = True
     while going:
-        clock.tick(400)
+        clock.tick(300)
 
         #Handle Input Events
         for event in pygame.event.get():
@@ -219,7 +233,7 @@ def main():
             player.die()
             write("You Died",screen,400,200,color=RED,size=250)
             write("Press Enter To Retry", screen, 400,
-                  250, size = 20, color=(0,255,0))
+                  300, size = 30, color=(255,128,0))
             pause()
             player = Player(background)
             allsprites = pygame.sprite.RenderPlain((player))
