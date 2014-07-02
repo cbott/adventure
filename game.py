@@ -63,6 +63,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 0.5
         self.direction = 1
         self.velocity = GRAVITY
+        self.horiz = 0
         self.jumping = False
     def update(self):
         #move side-to-side
@@ -113,7 +114,7 @@ class Player(pygame.sprite.Sprite):
         elif dx<0:
             self.direction = -1
         #move horizontaly
-        self.pos[0]+= self.speed * dx
+        self.pos[0] += self.speed * dx
         if self.rect.left < self.screen_area.left:
             self.pos[0] = self.screen_area.right - 10
         if self.rect.right > self.screen_area.right:
@@ -202,7 +203,7 @@ def main():
     pygame.mouse.set_visible(1)
 
     background = pygame.Surface(SCREEN_SIZE)
-    level = 6
+    level = 1
 #create background
     draw_bg(background, screen, "level"+str(level)+".png")
 
