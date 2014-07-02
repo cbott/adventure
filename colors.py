@@ -94,6 +94,10 @@ class Player(pygame.sprite.Sprite):
         #jump           
         if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
+        #drop
+        if pygame.key.get_pressed()[K_DOWN]:
+                if self.is_on(BLUE):
+                        self.pos[1]+=1
         #bounce on green
         if self.is_on(GREEN):
                 self.velocity = -1.2 * self.velocity
@@ -199,7 +203,7 @@ def pause():
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
-    pygame.display.set_caption('Fun Game')
+    pygame.display.set_caption('Colors')
     pygame.mouse.set_visible(1)
 
     background = pygame.Surface(SCREEN_SIZE)
