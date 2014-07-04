@@ -8,8 +8,12 @@ except:
         main_dir = "F:\Programming\Python\\adventure"
 data_dir = os.path.join(main_dir, 'data')
 
-#gravity is 10!!!!!!!!!!! ALWAYS!
-GRAVITY = 0.02
+#######Starting Level#########
+START_LEVEL = 9
+##############################
+
+#self.gravity is 10!!!!!!!!!!! ALWAYS!
+gravity = 0.02
 
 SCREEN_SIZE = (800,400)
 
@@ -62,9 +66,12 @@ class Player(pygame.sprite.Sprite):
         self.screen_area = screen.get_rect()
         self.speed = 0.5
         self.direction = 1
-        self.velocity = GRAVITY
+        self.velocity = gravity
+        self.gravity = gravity
         self.horiz = 0
         self.jumping = False
+        #direction of self.gravity: +/- 1
+        self.gforce = lambda:abs(self.gravity)/self.gravity
     def update(self):
         #move side-to-side
         if pygame.key.get_pressed()[K_LEFT] and not \
@@ -83,14 +90,13 @@ class Player(pygame.sprite.Sprite):
         #stop if you land on a non-white pixel
         try:
             if not self.is_on(WHITE) and not self.is_on(GREEN) \
-               and self.velocity>=0:
+               and self.velocity * self.gforce() >=0:
                 self.jumping = False
                 self.velocity = 0
             else:
-                self.velocity += GRAVITY
-
+                self.velocity += self.gravity
         except IndexError:
-                self.velocity += GRAVITY
+                self.velocity += self.gravity
         #jump           
         if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
@@ -106,8 +112,13 @@ class Player(pygame.sprite.Sprite):
                 self.move(self.direction)
         #hit your head
         if self.px_to_top(BLACK):
-            if self.velocity < 0:
+            if self.velocity * self.gforce() < 0:
                 self.velocity = 0
+        #flip self.gravity on magenta
+        if self.is_on(MAGENTA):
+            self.gravity = -self.gravity
+            self.original_image = pygame.transform.flip(self.image, 0, 1)
+            
         #move
         self.pos[1] += self.velocity
         self.rect.midbottom = (self.pos[0],self.pos[1])
@@ -128,14 +139,17 @@ class Player(pygame.sprite.Sprite):
         """How high?"""
         #move verticaly
         if not self.jumping:
-            self.velocity = -1.5
+            self.velocity = - self.gforce() * 1.5
             self.jumping = True
 
     def is_on(self, color):
         """tells whether the player is standing on a certain colored pixel"""
         value = False
         try:
-            bottom_px = (self.rect.centerx,self.rect.bottom+1)
+            if self.gforce() == 1:
+                bottom_px = (self.rect.centerx,self.rect.bottom+1)
+            else:
+                bottom_px = (self.rect.centerx,self.rect.top-1)
             value = self.level.get_at(bottom_px) == color
         except IndexError:
             if color == WHITE:
@@ -175,8 +189,12 @@ class Player(pygame.sprite.Sprite):
         """tells whether the player is bumping into a pixel his head"""
         value = False
         try:
-            l_px = (self.rect.left,self.rect.top - 1)
-            r_px = (self.rect.right,self.rect.top - 1)
+            if self.gforce() == 1:
+                l_px = (self.rect.left,self.rect.top - 1)
+                r_px = (self.rect.right,self.rect.top - 1)
+            else:
+                l_px = (self.rect.left,self.rect.bottom + 1)
+                r_px = (self.rect.right,self.rect.bottom + 1)
             if self.level.get_at(l_px) == color or \
                self.level.get_at(r_px) == color:
                 value = True
@@ -198,8 +216,10 @@ def pause():
                 pausing = False
             elif event.type == QUIT:
                 pausing = False
+                pygame.quit()
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pausing = False
+                pygame.quit()
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -207,7 +227,7 @@ def main():
     pygame.mouse.set_visible(1)
 
     background = pygame.Surface(SCREEN_SIZE)
-    level = 1
+    level = START_LEVEL
 #create background
     draw_bg(background, screen, "level"+str(level)+".png")
 
