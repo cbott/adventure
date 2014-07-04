@@ -9,7 +9,7 @@ except:
 data_dir = os.path.join(main_dir, 'data')
 
 #######Starting Level#########
-START_LEVEL = 9
+START_LEVEL = 10
 ##############################
 
 #self.gravity is 10!!!!!!!!!!! ALWAYS!
@@ -70,6 +70,7 @@ class Player(pygame.sprite.Sprite):
         self.gravity = gravity
         self.horiz = 0
         self.jumping = False
+        self.flipped = 0
         #direction of self.gravity: +/- 1
         self.gforce = lambda:abs(self.gravity)/self.gravity
     def update(self):
@@ -81,12 +82,7 @@ class Player(pygame.sprite.Sprite):
            self.px_to_right(BLACK):
             self.move(1)
         #face direction on travel
-        if self.direction == -1:
-            self.image = pygame.transform.flip(self.original_image, 1, 0)
-        elif self.direction == 1:
-            self.image = self.original_image
-            
-            
+        self.image = pygame.transform.flip(self.original_image,int(-(self.direction-1)/2), int(self.flipped))
         #stop if you land on a non-white pixel
         try:
             if not self.is_on(WHITE) and not self.is_on(GREEN) \
@@ -114,10 +110,10 @@ class Player(pygame.sprite.Sprite):
         if self.px_to_top(BLACK):
             if self.velocity * self.gforce() < 0:
                 self.velocity = 0
-        #flip self.gravity on magenta
+        #flip gravity on magenta
         if self.is_on(MAGENTA):
             self.gravity = -self.gravity
-            self.original_image = pygame.transform.flip(self.image, 0, 1)
+            self.flipped = -(self.flipped-1)
             
         #move
         self.pos[1] += self.velocity
