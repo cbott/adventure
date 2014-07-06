@@ -9,7 +9,7 @@ except:
 data_dir = os.path.join(main_dir, 'data')
 
 #######Starting Level#########
-START_LEVEL = 10
+START_LEVEL = 1
 ##############################
 
 #self.gravity is 10!!!!!!!!!!! ALWAYS!
