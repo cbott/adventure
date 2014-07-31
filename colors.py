@@ -216,6 +216,7 @@ def pause():
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pausing = False
                 pygame.quit()
+        
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -249,6 +250,12 @@ def main():
         allsprites.draw(screen)
         pygame.display.flip()
 
+        #restarting
+        if pygame.key.get_pressed()[K_r]:
+            player.die()
+            player = Player(background)
+            allsprites = pygame.sprite.RenderPlain((player))
+        
         #dying
         if player.is_on(RED):
             player.die()
