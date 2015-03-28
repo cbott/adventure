@@ -26,6 +26,7 @@ RED = (255,0,0,255)
 GREEN = (0, 255, 0, 255)
 CYAN = (0, 255, 255, 255)
 MAGENTA = (255, 0, 255, 255)
+NEAR_BLACK = (1,1,1,255)
 
 def write(words, surf, x, y, color = (0,0,0), size = 36):
         font = pygame.font.Font(None, size)
@@ -85,7 +86,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.flip(self.original_image,int(-(self.direction-1)/2), int(self.flipped))
         #stop if you land on a non-white pixel
         try:
-            if not self.is_on(WHITE) and not self.is_on(GREEN) \
+            if not self.is_on(WHITE) and not self.is_on(GREEN)and not self.is_on(NEAR_BLACK)\
                and self.velocity * self.gforce() >=0:
                 self.jumping = False
                 self.velocity = 0
