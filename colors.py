@@ -4,20 +4,14 @@ import os, pygame
 from pygame.locals import *
 from pygame.compat import geterror
 
-try:
-        main_dir = os.path.split(os.path.abspath(__file__))[0]
-except:
-        main_dir = "F:\Programming\Python\\adventure"
-data_dir = os.path.join(main_dir, 'data')
-
 #######Starting Level#########
-START_LEVEL = 1
+START_LEVEL = 3
 ##############################
 
-#self.gravity is 10!!!!!!!!!!! ALWAYS!
 gravity = 0.02
 
-SCREEN_SIZE = (800,400)
+SCREEN_SIZE = (800,400) # width, height
+IMAGE_FOLDER = "data"
 
 ####colors####
 BLACK = (0,0,0,255)
@@ -38,7 +32,7 @@ def write(words, surf, x, y, color = (0,0,0), size = 36):
         pygame.display.flip()
         
 def load_image(name, colorkey=None):
-    fullname = os.path.join(data_dir, name)
+    fullname = os.path.join(IMAGE_FOLDER, name)
     try:
         image = pygame.image.load(fullname)
     except pygame.error:
@@ -52,7 +46,7 @@ def load_image(name, colorkey=None):
     return image, image.get_rect()
 
 def draw_bg(surf, screen, img):
-    background_img = pygame.image.load(os.path.join(data_dir, img)).convert()
+    background_img = pygame.image.load(os.path.join(IMAGE_FOLDER, img)).convert()
     surf.blit(background_img, (0, 0))
     screen.blit(surf, (0,0))
     pygame.display.flip()
@@ -78,18 +72,16 @@ class Player(pygame.sprite.Sprite):
         self.gforce = lambda:abs(self.gravity)/self.gravity
     def update(self):
         #move side-to-side
-        if pygame.key.get_pressed()[K_LEFT] and not \
-           self.px_to_left(BLACK):
+        if pygame.key.get_pressed()[K_LEFT]:
             self.move(-1)
-        if pygame.key.get_pressed()[K_RIGHT] and not\
-           self.px_to_right(BLACK):
+        if pygame.key.get_pressed()[K_RIGHT]:
             self.move(1)
-        #face direction on travel
+        #face direction of travel
         self.image = pygame.transform.flip(self.original_image,int(-(self.direction-1)/2), int(self.flipped))
         #stop if you land on a non-white pixel
         try:
-            if not self.is_on(WHITE) and not self.is_on(GREEN)and not self.is_on(NEAR_BLACK)\
-               and self.velocity * self.gforce() >=0:
+            if not self.is_on(WHITE) and not self.is_on(GREEN) and not self.is_on(NEAR_BLACK)\
+               and self.velocity * self.gforce() >= 0:
                 self.jumping = False
                 self.velocity = 0
             else:
@@ -107,28 +99,33 @@ class Player(pygame.sprite.Sprite):
         if self.is_on(GREEN):
                 self.velocity = -1.2 * self.velocity
         #slide on cyan
-        if self.is_on(CYAN):
+        elif self.is_on(CYAN):
                 self.move(self.direction)
+        #flip gravity on magenta
+        elif self.is_on(MAGENTA):
+            self.gravity = -self.gravity
+            self.flipped = -(self.flipped-1)
+
         #hit your head
         if self.px_to_top(BLACK):
             if self.velocity * self.gforce() < 0:
-                self.velocity = 0
-        #flip gravity on magenta
-        if self.is_on(MAGENTA):
-            self.gravity = -self.gravity
-            self.flipped = -(self.flipped-1)
-            
+                self.velocity = 0    
         #move
         self.pos[1] += self.velocity
         self.rect.midbottom = (self.pos[0],self.pos[1])
 
     def move(self, dx):
+        # Prevent movement through black pixels
         if dx>0:
             self.direction = 1
+            if self.px_to_right(BLACK): return
         elif dx<0:
             self.direction = -1
+            if self.px_to_left(BLACK): return
+
         #move horizontaly
         self.pos[0] += self.speed * dx
+        #Wrap between sides of the screen
         if self.rect.left < self.screen_area.left:
             self.pos[0] = self.screen_area.right - 10
         if self.rect.right > self.screen_area.right:
