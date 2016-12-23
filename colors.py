@@ -5,7 +5,7 @@ from pygame.locals import *
 from pygame.compat import geterror
 
 #######Starting Level#########
-START_LEVEL = 3
+START_LEVEL = 1
 ##############################
 
 gravity = 0.02
@@ -58,7 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.image,self.rect = load_image('person.png', -1)
         self.original_image = self.image
         self.level = level
-        self.pos = [10,300]
+        self.pos = [10,350]
         screen = pygame.display.get_surface()
         self.screen_area = screen.get_rect()
         self.speed = 0.5
@@ -74,8 +74,11 @@ class Player(pygame.sprite.Sprite):
         #move side-to-side
         if pygame.key.get_pressed()[K_LEFT]:
             self.move(-1)
-        if pygame.key.get_pressed()[K_RIGHT]:
+        elif pygame.key.get_pressed()[K_RIGHT]:
             self.move(1)
+        #slide on cyan
+        elif self.is_on(CYAN):
+                self.move(self.direction)
         #face direction of travel
         self.image = pygame.transform.flip(self.original_image,int(-(self.direction-1)/2), int(self.flipped))
 
@@ -92,9 +95,6 @@ class Player(pygame.sprite.Sprite):
             self.jumping = False
             self.velocity = 0
 
-        #slide on cyan
-        if self.is_on(CYAN):
-                self.move(self.direction)
         #flip gravity on magenta
         if self.is_on(MAGENTA):
             self.gravity = -self.gravity
@@ -161,7 +161,10 @@ class Player(pygame.sprite.Sprite):
         """tells whether the player is bumping into a pixel on the right"""
         value = False
         try:
-            px = (self.rect.right+1,self.rect.bottom-4)
+            if self.gforce == 1:
+                px = (self.rect.right+1,self.rect.bottom-4)
+            else:
+                px = (self.rect.right+1,self.rect.top+4)
             value = self.level.get_at(px) == color
         except IndexError:
             if color == WHITE:
@@ -174,7 +177,10 @@ class Player(pygame.sprite.Sprite):
         """tells whether the player is bumping into a pixel on the left"""
         value = False
         try:
-            px = (self.rect.left-1,self.rect.bottom-4)
+            if self.gforce == 1:
+                px = (self.rect.left-1,self.rect.bottom-4)
+            else:
+                px = (self.rect.left-1,self.rect.top+4)
             value = self.level.get_at(px) == color
         except IndexError:
             if color == WHITE:
