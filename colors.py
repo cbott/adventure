@@ -78,16 +78,28 @@ class Player(pygame.sprite.Sprite):
             self.move(1)
         #face direction of travel
         self.image = pygame.transform.flip(self.original_image,int(-(self.direction-1)/2), int(self.flipped))
-        #stop if you land on a non-white pixel
-        try:
-            if not self.is_on(WHITE) and not self.is_on(GREEN) and not self.is_on(NEAR_BLACK)\
-               and self.velocity * self.gforce() >= 0:
-                self.jumping = False
-                self.velocity = 0
-            else:
-                self.velocity += self.gravity
-        except IndexError:
-                self.velocity += self.gravity
+
+        #bounce on green
+        if self.is_on(GREEN):
+                self.velocity = -1.2 * self.velocity
+        # otherwise fall downward if you are on white pixels
+        # or traveling opposite of gravity (i.e. decrease vertical velocity)
+        elif self.is_on(WHITE) or self.is_on(NEAR_BLACK)\
+            or self.velocity * self.gforce() < 0:
+            self.velocity += self.gravity
+        #or stop falling when you land, while traveling in the direction of gravity
+        else:
+            self.jumping = False
+            self.velocity = 0
+
+        #slide on cyan
+        if self.is_on(CYAN):
+                self.move(self.direction)
+        #flip gravity on magenta
+        if self.is_on(MAGENTA):
+            self.gravity = -self.gravity
+            self.flipped = -(self.flipped-1)
+
         #jump           
         if pygame.key.get_pressed()[K_UP] and not self.is_on(WHITE):
             self.jump()
@@ -95,16 +107,6 @@ class Player(pygame.sprite.Sprite):
         if pygame.key.get_pressed()[K_DOWN]:
                 if self.is_on(BLUE):
                         self.pos[1]+=1
-        #bounce on green
-        if self.is_on(GREEN):
-                self.velocity = -1.2 * self.velocity
-        #slide on cyan
-        elif self.is_on(CYAN):
-                self.move(self.direction)
-        #flip gravity on magenta
-        elif self.is_on(MAGENTA):
-            self.gravity = -self.gravity
-            self.flipped = -(self.flipped-1)
 
         #hit your head
         if self.px_to_top(BLACK):
