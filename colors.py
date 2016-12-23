@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import os, pygame
 from pygame.locals import *
 from pygame.compat import geterror
